@@ -1,4 +1,4 @@
-moran.plot.drop <- function(x, listw, locmoran, alpha = 0.05, adjusted_p = NULL, significant = TRUE, xlab = NULL, ylab = NULL, return_df = TRUE, spChk = NULL, labels = NULL, zero.policy=attr(listw, "zero.policy")) {
+moran.plot.drop <- function(x, listw, locmoran, alpha = 0.05, adjusted_p = NULL, significant = TRUE, xlab = NULL, ylab = NULL, quadr = "pysal", return_df = TRUE, spChk = NULL, labels = NULL, zero.policy=attr(listw, "zero.policy")) {
   if (!inherits(listw, "listw")) 
     stop(paste(deparse(substitute(listw)), "is not a listw object"))
   if (!inherits(locmoran, "localmoran")) 
@@ -31,6 +31,9 @@ moran.plot.drop <- function(x, listw, locmoran, alpha = 0.05, adjusted_p = NULL,
   if (spChk && !chkIDs(locmoran, listw)) 
     stop("Check of data and weights ID integrity failed")
   labs <- TRUE
+  if(!any(grepl(quadr, colnames(attr(locmoran, "quadr"))))) {
+    stop(paste("Unclear hotspot specification. Please use any of "), paste(colnames(attr(locmoran, "quadr")),collapse=", "))
+  }
   if (is.logical(labels)) {
     if(!labels)
       labs <- FALSE
@@ -58,25 +61,24 @@ moran.plot.drop <- function(x, listw, locmoran, alpha = 0.05, adjusted_p = NULL,
 
   b <- ((cv * sqrt(locmoran[, 3])) + locmoran[, 2]) * var(x) / (x - mean(x))
   b2 <- ((-cv * sqrt(locmoran[, 3])) + locmoran[, 2]) * var(x) / (x - mean(x))
-  b[which((x < mean(x) & WX > mean(WX)) | (x > mean(x) & WX < mean(WX)))] <- b2[which((x < mean(x) & WX > mean(WX)) | (x > mean(x) & WX < mean(WX)))]
-  
+  b[which((attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-High") | (attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-Low"))] <- b2[which((attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-High") | (attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-Low"))]  
   if(significant) {
-    x_q1 <- x[which(x > mean(x) & WX > mean(WX) & locmoran[, 4] >= cv)]
-    y_q1 <- WX[which(x > mean(x) & WX > mean(WX) & locmoran[, 4] >= cv)]
-    b_q1 <- b[which(x > mean(x) & WX > mean(WX) & locmoran[, 4] >= cv)]
-    labels_q1 <- labels[which(x > mean(x) & WX > mean(WX) & locmoran[, 4] >= cv)]
-    x_q2 <- x[which(x > mean(x) & WX < mean(WX) & locmoran[, 4] <= (-1) * cv)]
-    y_q2 <- WX[which(x > mean(x) & WX < mean(WX) & locmoran[, 4] <= (-1) * cv)]
-    b_q2 <- b[which(x > mean(x) & WX < mean(WX) & locmoran[, 4] <= (-1) * cv)]
-    labels_q2 <- labels[which(x > mean(x) & WX < mean(WX) & locmoran[, 4] <= (-1) * cv)]
-    x_q3 <- x[which(x < mean(x) & WX < mean(WX) & locmoran[, 4] >= cv)]
-    y_q3 <- WX[which(x < mean(x) & WX < mean(WX) & locmoran[, 4] >= cv)]
-    b_q3 <- b[which(x < mean(x) & WX < mean(WX) & locmoran[, 4] >= cv)]
-    labels_q3 <- labels[which(x < mean(x) & WX < mean(WX) & locmoran[, 4] >= cv)]
-    x_q4 <- x[which(x < mean(x) & WX > mean(WX) & locmoran[, 4] <= (-1) * cv)]
-    y_q4 <- WX[which(x < mean(x) & WX > mean(WX) & locmoran[, 4] <= (-1) * cv)]
-    b_q4 <- b[which(x < mean(x) & WX > mean(WX) & locmoran[, 4] <= (-1) * cv)]
-    labels_q4 <- labels[which(x < mean(x) & WX > mean(WX) & locmoran[, 4] <= (-1) * cv)]
+    x_q1 <- x[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-High" & locmoran[, 4] >= cv)]
+    y_q1 <- WX[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-High" & locmoran[, 4] >= cv)]
+    b_q1 <- b[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-High" & locmoran[, 4] >= cv)]
+    labels_q1 <- labels[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-High" & locmoran[, 4] >= cv)]
+    x_q2 <- x[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-Low" & locmoran[, 4] <= (-1) * cv)]
+    y_q2 <- WX[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-Low" & locmoran[, 4] <= (-1) * cv)]
+    b_q2 <- b[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-Low" & locmoran[, 4] <= (-1) * cv)]
+    labels_q2 <- labels[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "High-Low" & locmoran[, 4] <= (-1) * cv)]
+    x_q3 <- x[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-Low" & locmoran[, 4] >= cv)]
+    y_q3 <- WX[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-Low" & locmoran[, 4] >= cv)]
+    b_q3 <- b[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-Low" & locmoran[, 4] >= cv)]
+    labels_q3 <- labels[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-Low" & locmoran[, 4] >= cv)]
+    x_q4 <- x[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-High" & locmoran[, 4] <= (-1) * cv)]
+    y_q4 <- WX[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-High" & locmoran[, 4] <= (-1) * cv)]
+    b_q4 <- b[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-High" & locmoran[, 4] <= (-1) * cv)]
+    labels_q4 <- labels[which(attr(locmoran, "quadr")[[grep(quadr, colnames(attr(locmoran, "quadr")))]] == "Low-High" & locmoran[, 4] <= (-1) * cv)]
   } else {
     x_q1 <- x[which(x > mean(x) & WX > mean(WX) & locmoran[, 4] < cv)]
     y_q1 <- WX[which(x > mean(x) & WX > mean(WX) & locmoran[, 4] < cv)]
