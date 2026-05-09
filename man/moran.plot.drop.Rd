@@ -21,6 +21,7 @@ moran.plot.drop(x, listw, locmoran, alpha = 0.05, adjusted_p = NULL,
   \item{significant}{default TRUE; a parameter indicating whether to display critical value distances of significant (default) or non-significant observations}
   \item{xlab}{default NULL; an optional label for the x-axis}
   \item{ylab}{default NULL; an optional label for the y-axis}
+  \item{quadr}{default "pysal"; type of hotspot quadrant information to be used from the locmoran object, as specified by the column names returned by \code{attr(locmoran, “quadr”)} and as specified in \code{\link{localmoran}}}
   \item{return_df}{default TRUE; invisibly return a data.frame object, if FALSE do not return anything}
   \item{spChk}{default NULL to use \code{get.spChkOption()}; should the locmoran names be checked against the listw spatial objects for identity integrity, TRUE, or FALSE}
   \item{labels}{default NULL; no labels are plotted by default; region IDs from the \code{listw} object are used as labels of significant observations if set to TRUE; custom labels are used if a character vector is provided}
